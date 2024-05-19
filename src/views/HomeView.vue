@@ -76,7 +76,7 @@ const createAnAnswer = async () => {
 const handlerIceCandidate = () => {
   const answerDataValue = decodedCallData(answerData.value)
   addNewIceCandidate(answerDataValue.iceCandidate, connection.value)
-  addNewDescriptionCandidate(answerDataValue, connection.value)
+  addNewDescriptionCandidate(answerDataValue.offer, connection.value)
 }
 
 watchEffect(() => {

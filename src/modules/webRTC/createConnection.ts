@@ -62,9 +62,9 @@ export const addNewIceCandidate = (
 }
 
 export const addNewDescriptionCandidate = async (
-  answer: RTCSessionDescriptionInit,
+  offer: RTCSessionDescriptionInit,
   peerConnection: RTCPeerConnection | null
 ) => {
-  console.log(answer)
-  if (peerConnection) await peerConnection.setRemoteDescription(answer)
+  console.log(offer)
+  if (peerConnection) await peerConnection.setRemoteDescription(offer)
 }
