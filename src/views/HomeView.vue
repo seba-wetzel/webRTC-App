@@ -3,8 +3,8 @@ import { createRemoteStream, createUserStream } from '@/modules/media/mediaStrea
 import { createVideoContainer } from '@/modules/media/videoContainner'
 import { createPeerConnection } from '@/modules/webRTC/createConnection'
 
-import { ref, watchEffect } from 'vue'
-const iceCandidate = ref(null)
+import { ref, watchEffect, watch } from 'vue'
+const iceCandidate = ref([])
 const offer = ref<RTCSessionDescriptionInit | null>(null)
 
 const localVideo = ref<null | HTMLVideoElement>(null)
@@ -38,17 +38,22 @@ const createACall = async () => {
     localStream,
     remoteStream,
     emit: (event, data) => {
-      iceCandidate.value = data
+      iceCandidate.value = [...iceCandidate.value, data]
     }
   })
   offer.value = await connection.createOffer()
   connection.setLocalDescription(offer.value)
 
-  callData.value = encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
+  // callData.value = encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
 }
 
 const createAnAnswer = async () => {
+  const callDataValue = decodedCallData(callData.value)
+  console.log(callDataValue)
+  const offerObj = callDataValue.offer
+  const remoteIceCandidate = callDataValue.iceCandidate
   const connection = await createPeerConnection({
+    offerObj,
     localStream,
     remoteStream,
     emit: (event, data) => {
@@ -57,6 +62,11 @@ const createAnAnswer = async () => {
   })
   const answer = await connection.createAnswer()
   connection.setLocalDescription(answer)
+  console.log(remoteIceCandidate)
+  remoteIceCandidate.forEach((candidate: RTCIceCandidate) => {
+    console.log(candidate)
+    connection.addIceCandidate(candidate.candidate)
+  })
 }
 
 watchEffect(() => {
@@ -67,24 +77,34 @@ watchEffect(() => {
     createVideoContainer(remoteVideo.value, remoteStream)
   }
 })
+
+watch(iceCandidate, () => {
+  callData.value = encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
+})
 </script>
 
 <template>
   <main>
-    <div class="flex flex-col items-center justify-center">
-      <p class="text-balance text-lg">CallData: {{ callData }}</p>
+    <div class="flex flex-col items-center justify-center gap-4 m-4">
+      <p class="text-balance text-lg overflow-hidden">CallData: {{ callData }}</p>
+      <textarea
+        v-model="callData"
+        type="text"
+        class="w-96 bg-transparent"
+        placeholder="Ingrese los datos de la reunion"
+      />
       <button @click="copyToClipboard(callData)" class="ring-4">Copy to clipboard</button>
     </div>
-    <div class="flex justify-center space-x-4">
-      <button @click="createACall" class="ring-4">Create a call</button>
+    <div class="flex justify-center space-x-4 gap-4 m-4">
+      <button @click="createACall" :disable="callData" class="ring-4">Create a call</button>
       <button @click="createAnAnswer" class="ring-4">Create an answer</button>
     </div>
-    <div id="videos">
+    <div class="flex flex-row">
       <div id="video-wrapper">
         <div id="waiting" class="btn btn-warning">Waiting for answer...</div>
         <video
           :ref="(e) => (localVideo = e as HTMLVideoElement)"
-          class="video-player"
+          class="w-96"
           id="local-video"
           autoplay
           playsinline
@@ -93,7 +113,7 @@ watchEffect(() => {
       </div>
       <video
         :ref="(e) => (remoteVideo = e as HTMLVideoElement)"
-        class="video-player"
+        class="w-96"
         id="remote-video"
         autoplay
         playsinline
