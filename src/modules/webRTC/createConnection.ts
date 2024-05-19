@@ -65,5 +65,6 @@ export const addNewDescriptionCandidate = async (
   answer: RTCSessionDescriptionInit,
   peerConnection: RTCPeerConnection | null
 ) => {
+  console.log(answer)
   if (peerConnection) await peerConnection.setRemoteDescription(answer)
 }

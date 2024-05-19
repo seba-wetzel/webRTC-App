@@ -66,6 +66,7 @@ const createAnAnswer = async () => {
     emit
   })
   const answer = await connection.value.createAnswer()
+  offer.value = answer
   connection.value.setLocalDescription(answer)
   remoteIceCandidate.forEach(({ candidate }: { candidate: RTCIceCandidate }) => {
     if (connection.value) connection.value.addIceCandidate(candidate)
@@ -75,7 +76,7 @@ const createAnAnswer = async () => {
 const handlerIceCandidate = () => {
   const answerDataValue = decodedCallData(answerData.value)
   addNewIceCandidate(answerDataValue.iceCandidate, connection.value)
-  addNewDescriptionCandidate(answerDataValue.offer, connection.value)
+  addNewDescriptionCandidate(answerDataValue, connection.value)
 }
 
 watchEffect(() => {
