@@ -14,6 +14,10 @@ const callData = computed(() => {
   return encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
 })
 
+const callDataInput = ref<string>('')
+
+const answerData = ref<string>('')
+
 const encodedCallData = (data: any) => {
   const stringData = JSON.stringify(data)
   const encodedData = btoa(stringData)
@@ -45,13 +49,10 @@ const createACall = async () => {
   })
   offer.value = await connection.createOffer()
   connection.setLocalDescription(offer.value)
-
-  // callData.value = encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
 }
 
 const createAnAnswer = async () => {
-  const callDataValue = decodedCallData(callData.value)
-  console.log(callDataValue)
+  const callDataValue = decodedCallData(callDataInput.value)
   const offerObj = callDataValue.offer
   const remoteIceCandidate = callDataValue.iceCandidate
   const connection = await createPeerConnection({
@@ -64,9 +65,7 @@ const createAnAnswer = async () => {
   })
   const answer = await connection.createAnswer()
   connection.setLocalDescription(answer)
-  console.log(remoteIceCandidate)
   remoteIceCandidate.forEach(({ candidate }: { candidate: RTCIceCandidate }) => {
-    console.log(candidate)
     connection.addIceCandidate(candidate)
   })
 }
@@ -86,7 +85,7 @@ watchEffect(() => {
     <div class="flex flex-col items-center justify-center gap-4 m-4">
       <p class="text-balance text-lg overflow-hidden">CallData: {{ callData }}</p>
       <textarea
-        v-model="callData"
+        v-model="callDataInput"
         type="text"
         class="w-96 bg-transparent"
         placeholder="Ingrese los datos de la reunion"
@@ -96,6 +95,15 @@ watchEffect(() => {
     <div class="flex justify-center space-x-4 gap-4 m-4">
       <button @click="createACall" :disable="callData" class="ring-4">Create a call</button>
       <button @click="createAnAnswer" class="ring-4">Create an answer</button>
+    </div>
+    <div>
+      <textarea
+        v-model="answerData"
+        type="text"
+        class="w-96 bg-transparent"
+        placeholder="Envia estos datos al otro usuario"
+      />
+      <button @click="copyToClipboard(answerData)" class="ring-4">Copy to clipboard</button>
     </div>
     <div class="flex flex-row">
       <div id="video-wrapper">
