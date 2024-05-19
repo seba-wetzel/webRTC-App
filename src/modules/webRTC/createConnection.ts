@@ -56,7 +56,7 @@ export const createPeerConnection = async ({
 
 export const addNewIceCandidate = (
   candidate: RTCIceCandidateInit,
-  peerConnection: RTCPeerConnection
+  peerConnection: RTCPeerConnection | null
 ) => {
-  peerConnection.addIceCandidate(candidate)
+  if (peerConnection) peerConnection.addIceCandidate(candidate)
 }

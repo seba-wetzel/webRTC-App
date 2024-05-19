@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createRemoteStream, createUserStream } from '@/modules/media/mediaStream'
 import { createVideoContainer } from '@/modules/media/videoContainner'
-import { createPeerConnection } from '@/modules/webRTC/createConnection'
+import { addNewIceCandidate, createPeerConnection } from '@/modules/webRTC/createConnection'
 
 import { computed, ref, watchEffect } from 'vue'
 const iceCandidate = ref<any>([])
@@ -9,7 +9,7 @@ const offer = ref<RTCSessionDescriptionInit | null>(null)
 
 const localVideo = ref<null | HTMLVideoElement>(null)
 const remoteVideo = ref<null | HTMLVideoElement>(null)
-
+const connection = ref<RTCPeerConnection | null>(null)
 const callData = computed(() => {
   return encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
 })
@@ -42,30 +42,35 @@ const emit = (_event: string, data: any) => {
   iceCandidate.value = [...iceCandidate.value, data]
 }
 const createACall = async () => {
-  const connection = await createPeerConnection({
+  connection.value = await createPeerConnection({
     localStream,
     remoteStream,
     emit
   })
-  offer.value = await connection.createOffer()
-  connection.setLocalDescription(offer.value)
+  offer.value = await connection.value.createOffer()
+  connection.value.setLocalDescription(offer.value)
 }
 
 const createAnAnswer = async () => {
   const callDataValue = decodedCallData(callDataInput.value)
   const offerObj = callDataValue.offer
   const remoteIceCandidate = callDataValue.iceCandidate
-  const connection = await createPeerConnection({
+  connection.value = await createPeerConnection({
     offerObj,
     localStream,
     remoteStream,
     emit
   })
-  const answer = await connection.createAnswer()
-  connection.setLocalDescription(answer)
+  const answer = await connection.value.createAnswer()
+  connection.value.setLocalDescription(answer)
   remoteIceCandidate.forEach(({ candidate }: { candidate: RTCIceCandidate }) => {
-    connection.addIceCandidate(candidate)
+    if (connection.value) connection.value.addIceCandidate(candidate)
   })
+}
+
+const handlerIceCandidate = () => {
+  const answerDataValue = decodedCallData(answerData.value)
+  addNewIceCandidate(decodedCallData(answerDataValue).iceCandidate, connection.value)
 }
 
 watchEffect(() => {
@@ -94,14 +99,14 @@ watchEffect(() => {
       <button @click="createACall" :disable="callData" class="ring-4">Create a call</button>
       <button @click="createAnAnswer" class="ring-4">Create an answer</button>
     </div>
-    <div>
+    <div class="flex justify-center gap-4 m-4">
       <textarea
         v-model="answerData"
         type="text"
         class="w-96 bg-transparent"
-        placeholder="Envia estos datos al otro usuario"
+        placeholder="Datos del remitente"
       />
-      <button @click="copyToClipboard(answerData)" class="ring-4">Copy to clipboard</button>
+      <button @click="handlerIceCandidate" class="ring-4">Copy to clipboard</button>
     </div>
     <div class="flex flex-row">
       <div id="video-wrapper">
