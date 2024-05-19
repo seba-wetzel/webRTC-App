@@ -38,14 +38,14 @@ const localStream = await createUserStream({
   audio: true
 })
 const remoteStream = await createRemoteStream()
-
+const emit = (_event: string, data: any) => {
+  iceCandidate.value = [...iceCandidate.value, data]
+}
 const createACall = async () => {
   const connection = await createPeerConnection({
     localStream,
     remoteStream,
-    emit: (event, data) => {
-      iceCandidate.value = [...iceCandidate.value, data]
-    }
+    emit
   })
   offer.value = await connection.createOffer()
   connection.setLocalDescription(offer.value)
@@ -59,9 +59,7 @@ const createAnAnswer = async () => {
     offerObj,
     localStream,
     remoteStream,
-    emit: (event, data) => {
-      iceCandidate.value = data
-    }
+    emit
   })
   const answer = await connection.createAnswer()
   connection.setLocalDescription(answer)
