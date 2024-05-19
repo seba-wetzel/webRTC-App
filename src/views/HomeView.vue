@@ -3,8 +3,8 @@ import { createRemoteStream, createUserStream } from '@/modules/media/mediaStrea
 import { createVideoContainer } from '@/modules/media/videoContainner'
 import { createPeerConnection } from '@/modules/webRTC/createConnection'
 
-import { ref, watchEffect, watch } from 'vue'
-const iceCandidate = ref([])
+import { ref, watch, watchEffect } from 'vue'
+const iceCandidate = ref<any>([])
 const offer = ref<RTCSessionDescriptionInit | null>(null)
 
 const localVideo = ref<null | HTMLVideoElement>(null)
@@ -63,9 +63,9 @@ const createAnAnswer = async () => {
   const answer = await connection.createAnswer()
   connection.setLocalDescription(answer)
   console.log(remoteIceCandidate)
-  remoteIceCandidate.forEach((candidate: RTCIceCandidate) => {
+  remoteIceCandidate.forEach(({ candidate }: { candidate: RTCIceCandidate }) => {
     console.log(candidate)
-    connection.addIceCandidate(candidate.candidate)
+    connection.addIceCandidate(candidate)
   })
 }
 
