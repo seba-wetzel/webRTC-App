@@ -3,14 +3,16 @@ import { createRemoteStream, createUserStream } from '@/modules/media/mediaStrea
 import { createVideoContainer } from '@/modules/media/videoContainner'
 import { createPeerConnection } from '@/modules/webRTC/createConnection'
 
-import { ref, watch, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 const iceCandidate = ref<any>([])
 const offer = ref<RTCSessionDescriptionInit | null>(null)
 
 const localVideo = ref<null | HTMLVideoElement>(null)
 const remoteVideo = ref<null | HTMLVideoElement>(null)
 
-const callData = ref('')
+const callData = computed(() => {
+  return encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
+})
 
 const encodedCallData = (data: any) => {
   const stringData = JSON.stringify(data)
@@ -76,10 +78,6 @@ watchEffect(() => {
   if (remoteVideo.value) {
     createVideoContainer(remoteVideo.value, remoteStream)
   }
-})
-
-watch(iceCandidate, () => {
-  callData.value = encodedCallData({ offer: offer.value, iceCandidate: iceCandidate.value })
 })
 </script>
 
