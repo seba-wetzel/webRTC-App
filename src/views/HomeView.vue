@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { createRemoteStream, createUserStream } from '@/modules/media/mediaStream'
 import { createVideoContainer } from '@/modules/media/videoContainner'
-import { addNewIceCandidate, createPeerConnection } from '@/modules/webRTC/createConnection'
+import {
+  addNewDescriptionCandidate,
+  addNewIceCandidate,
+  createPeerConnection
+} from '@/modules/webRTC/createConnection'
 
 import { computed, ref, watchEffect } from 'vue'
 const iceCandidate = ref<any>([])
@@ -37,7 +41,7 @@ const localStream = await createUserStream({
   video: true,
   audio: true
 })
-const remoteStream = await createRemoteStream()
+const remoteStream = createRemoteStream()
 const emit = (_event: string, data: any) => {
   iceCandidate.value = [...iceCandidate.value, data]
 }
@@ -70,7 +74,8 @@ const createAnAnswer = async () => {
 
 const handlerIceCandidate = () => {
   const answerDataValue = decodedCallData(answerData.value)
-  addNewIceCandidate(decodedCallData(answerDataValue).iceCandidate, connection.value)
+  addNewIceCandidate(answerDataValue.iceCandidate, connection.value)
+  addNewDescriptionCandidate(answerDataValue.offer, connection.value)
 }
 
 watchEffect(() => {
@@ -100,7 +105,7 @@ watchEffect(() => {
       <button @click="createAnAnswer" class="ring-4">Create an answer</button>
     </div>
     <div class="flex justify-center gap-4 m-4">
-      <textarea
+      <input
         v-model="answerData"
         type="text"
         class="w-96 bg-transparent"

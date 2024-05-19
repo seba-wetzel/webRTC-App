@@ -60,3 +60,10 @@ export const addNewIceCandidate = (
 ) => {
   if (peerConnection) peerConnection.addIceCandidate(candidate)
 }
+
+export const addNewDescriptionCandidate = async (
+  answer: RTCSessionDescriptionInit,
+  peerConnection: RTCPeerConnection | null
+) => {
+  if (peerConnection) await peerConnection.setRemoteDescription(answer)
+}
