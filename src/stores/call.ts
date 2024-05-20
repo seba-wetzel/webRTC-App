@@ -55,7 +55,8 @@ export const useCallStore = defineStore('call', () => {
       remoteStream: remoteStream.value,
       emit: (_event: string, data: any) => {
         if (_event === 'sendIceCandidateToSignalingServer') addIceCandidate(data)
-        if (_event === 'connectRemoteStreamToVideo') callState.value = 'onCall'
+        if (_event === 'connectRemote' && data) callState.value = 'onCall'
+        if (_event === 'connectRemote' && !data) callState.value = 'end'
       }
     })
     const answer = await connection.value.createAnswer()

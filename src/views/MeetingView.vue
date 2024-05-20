@@ -17,9 +17,9 @@ watchEffect(() => {
 </script>
 <template>
   <div class="h-full min-h-[80lvh] flex flex-col p-4">
-    <div class="flex flex-col md:flex-row justify-evenly gap-4 relative flex-grow">
+    <div class="flex flex-col md:flex-row justify-evenly gap-4 relative flex-grow mx-4">
       <div
-        class="rounded-md md:border-2 md:pb-2 md:px-2 flex flex-col items-center absolute size-48 md:size-auto md:static inset-y-3/4 inset-x-1/2 bg-black md:bg-transparent"
+        class="rounded-md md:border-2 md:pb-2 md:px-2 flex flex-col items-center absolute size-44 md:size-auto md:static top-[90%] inset-x-1/2 bg-black md:bg-transparent"
       >
         <label class="hidden md:block m-1 text-lg" for="local-video">Local</label>
         <video

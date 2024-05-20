@@ -25,7 +25,7 @@ watch(
       invitationData.value = callStore.callData
     }
     if (data === 'onCall') {
-      // router.push({ name: 'meeting' })
+      router.push({ name: 'meeting' })
     }
   }
 )

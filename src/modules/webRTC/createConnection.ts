@@ -1,5 +1,8 @@
 import { peerConfiguration } from './config'
-export type Signal = 'connectRemoteStreamToVideo' | 'sendIceCandidateToSignalingServer'
+export type Signal =
+  | 'connectRemoteStreamToVideo'
+  | 'sendIceCandidateToSignalingServer'
+  | 'connectRemote'
 
 export type CreatePeerConnection = {
   offerObj?: RTCSessionDescriptionInit | undefined | null
@@ -14,7 +17,7 @@ export const createPeerConnection = async ({
   remoteStream,
   emit
 }: CreatePeerConnection) => {
-  const peerConnection = await new RTCPeerConnection(peerConfiguration)
+  const peerConnection = new RTCPeerConnection(peerConfiguration)
 
   if (localStream) {
     localStream.getTracks().forEach((track) => {
@@ -22,8 +25,12 @@ export const createPeerConnection = async ({
     })
   }
 
-  peerConnection.addEventListener('iceconnectionstatechange', (e) => {
-    console.log('iceconnectionstatechange', e)
+  peerConnection.addEventListener('connectionstatechange', (e) => {
+    console.log('connectionstatechange', e)
+    const { connectionState } = e.currentTarget as RTCPeerConnection
+    console.log('connectionState', connectionState)
+    if (connectionState === 'connected') emit('connectRemote', true)
+    if (connectionState === 'disconnected') emit('connectRemote', false)
   })
 
   peerConnection.addEventListener('icecandidate', ({ candidate }) => {
@@ -35,15 +42,15 @@ export const createPeerConnection = async ({
   })
 
   peerConnection.addEventListener('track', (e) => {
-    // emit('connectRemoteStreamToVideo', true)
-    console.log('track', e)
+    emit('connectRemoteStreamToVideo', true)
+
     e.streams[0].getTracks().forEach((track) => {
       if (remoteStream) remoteStream.addTrack(track)
     })
   })
 
   peerConnection.addEventListener('datachannel', (e) => {
-    console.log('connectionstatechange', e)
+    console.log('datachannel', e)
   })
 
   if (offerObj) {
