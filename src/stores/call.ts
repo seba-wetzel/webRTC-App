@@ -49,7 +49,6 @@ export const useCallStore = defineStore('call', () => {
     const callDataValue = decodedCallData(inComingCallData)
     const offerObj = callDataValue.offer
     const remoteIceCandidate = callDataValue.iceCandidate
-    callState.value = 'joining'
     connection.value = await createPeerConnection({
       offerObj,
       localStream: localStream.value,
@@ -65,6 +64,7 @@ export const useCallStore = defineStore('call', () => {
     remoteIceCandidate.forEach(({ candidate }: { candidate: RTCIceCandidate }) => {
       if (connection.value) connection.value.addIceCandidate(candidate)
     })
+    callState.value = 'joining'
   }
 
   const acceptIncomingInvitation = (incommingInvitationReply: string) => {

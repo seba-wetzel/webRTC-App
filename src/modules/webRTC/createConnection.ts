@@ -1,10 +1,11 @@
 import { peerConfiguration } from './config'
+export type Signal = 'connectRemoteStreamToVideo' | 'sendIceCandidateToSignalingServer'
 
 export type CreatePeerConnection = {
   offerObj?: RTCSessionDescriptionInit | undefined | null
   localStream?: MediaStream
   remoteStream?: MediaStream
-  emit: (event: string, data: any) => void
+  emit: (event: Signal, data: any) => void
 }
 
 export const createPeerConnection = async ({
@@ -34,7 +35,7 @@ export const createPeerConnection = async ({
   })
 
   peerConnection.addEventListener('track', (e) => {
-    emit('connectRemoteStreamToVideo', true)
+    // emit('connectRemoteStreamToVideo', true)
     console.log('track', e)
     e.streams[0].getTracks().forEach((track) => {
       if (remoteStream) remoteStream.addTrack(track)

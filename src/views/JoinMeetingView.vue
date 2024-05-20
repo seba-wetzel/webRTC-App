@@ -21,7 +21,7 @@ const pasteFromClipboard = async () => {
 watch(
   () => callStore.callState,
   (data) => {
-    if (data === 'waiting') {
+    if (data === 'joining') {
       myCredentials.value = callStore.callData
     }
     if (data === 'onCall') {
@@ -73,6 +73,7 @@ onMounted(() => null)
       </button>
     </div>
   </div>
+  <button @click="router.push({ name: 'meeting' })">Ir a la reunion</button>
 </template>
 <style scoped>
 .wrapper {
