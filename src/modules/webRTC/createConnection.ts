@@ -13,15 +13,10 @@ export const createPeerConnection = async ({
   remoteStream,
   emit
 }: CreatePeerConnection) => {
-  //RTCPeerConnection is the thing that creates the connection
-  //we can pass a config object, and that config object can contain stun servers
-  //which will fetch us ICE candidates
   const peerConnection = await new RTCPeerConnection(peerConfiguration)
 
-  // remoteVideoEl.srcObject = remoteStream;
   if (localStream) {
     localStream.getTracks().forEach((track) => {
-      //add localtracks so that they can be sent once the connection is established
       peerConnection.addTrack(track, localStream)
     })
   }
@@ -39,17 +34,19 @@ export const createPeerConnection = async ({
   })
 
   peerConnection.addEventListener('track', (e) => {
+    emit('connectRemoteStreamToVideo', true)
+    console.log('track', e)
     e.streams[0].getTracks().forEach((track) => {
       if (remoteStream) remoteStream.addTrack(track)
     })
   })
 
+  peerConnection.addEventListener('datachannel', (e) => {
+    console.log('connectionstatechange', e)
+  })
+
   if (offerObj) {
-    //this won't be set when called from call();
-    //will be set when we call from answerOffer()
-    // console.log(peerConnection.signalingState) //should be stable because no setDesc has been run yet
     await peerConnection.setRemoteDescription(offerObj)
-    // console.log(peerConnection.signalingState) //should be have-remote-offer, because client2 has setRemoteDesc on the offer
   }
   return peerConnection
 }
@@ -65,6 +62,5 @@ export const addNewDescriptionCandidate = async (
   offer: RTCSessionDescriptionInit,
   peerConnection: RTCPeerConnection | null
 ) => {
-  console.log(offer)
   if (peerConnection) await peerConnection.setRemoteDescription(offer)
 }
